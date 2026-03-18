@@ -15,4 +15,5 @@ urlpatterns = [
     path('predictions/export/<str:prediction_type>/', views.extract_predictions_csv, name='extract_predictions'),
     path('charts/', views.charts_view, name='charts'),
     path('profile/', views.profile_view, name='profile'),
+    path('datasets/fetch-live/', views.fetch_live_data, name='fetch_live_data'),
 ]

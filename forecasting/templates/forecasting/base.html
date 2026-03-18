@@ -6,101 +6,222 @@
   <title>{% block title %}COVID-19 Forecasting{% endblock %}</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
   <style>
     :root {
-      --primary: #1a1a2e;
-      --secondary: #16213e;
-      --accent: #0f3460;
-      --highlight: #e94560;
+      --bg-primary: #020c1b;
+      --bg-secondary: #0a192f;
+      --bg-card: #112240;
+      --accent: #64ffda;
+      --accent2: #00b4d8;
+      --text-primary: #ccd6f6;
+      --text-secondary: #8892b0;
+      --danger: #ff6b6b;
+      --warning: #ffd93d;
+      --border: rgba(100,255,218,0.1);
     }
-    body { background: #f4f6f9; font-family: 'Segoe UI', sans-serif; }
-    .navbar { background: linear-gradient(135deg, var(--primary), var(--accent)) !important; }
-    .navbar-brand, .nav-link { color: #f0f0f0 !important; }
-    .nav-link:hover { color: var(--highlight) !important; }
-    .sidebar { background: linear-gradient(180deg, var(--primary), var(--secondary)); min-height: 100vh; padding-top: 20px; }
-    .sidebar .nav-link { color: rgba(255,255,255,0.8); padding: 10px 20px; border-radius: 8px; margin: 2px 8px; transition: all 0.3s; }
-    .sidebar .nav-link:hover, .sidebar .nav-link.active { background: var(--highlight); color: white; }
-    .card { border: none; border-radius: 12px; box-shadow: 0 2px 15px rgba(0,0,0,0.08); }
-    .stat-card { background: linear-gradient(135deg, var(--accent), var(--primary)); color: white; }
-    .stat-card .stat-number { font-size: 2rem; font-weight: bold; }
-    .btn-primary { background: var(--highlight); border-color: var(--highlight); }
-    .btn-primary:hover { background: #c73652; border-color: #c73652; }
-    .table thead { background: var(--accent); color: white; }
-    .hero-banner { background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; padding: 30px; border-radius: 16px; margin-bottom: 24px; }
-    .forecast-chip { display: inline-block; background: #e3f2fd; color: #1565c0; padding: 3px 10px; border-radius: 20px; margin: 2px; font-size: 0.82rem; }
-    .metrics-table td, .metrics-table th { font-size: 0.85rem; }
+    * { font-family: 'Inter', sans-serif; box-sizing: border-box; }
+    body { background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; }
+
+    /* NAVBAR */
+    .navbar {
+      background: rgba(10,25,47,0.98) !important;
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 28px;
+      position: sticky; top: 0; z-index: 1000;
+    }
+    .navbar-brand { font-size: 1.2rem; font-weight: 700; color: var(--accent) !important; letter-spacing: 1px; }
+    .nav-user { background: rgba(100,255,218,0.05); border: 1px solid var(--border); border-radius: 50px; padding: 6px 18px; color: var(--text-secondary); font-size: 0.85rem; }
+    .btn-logout { background: transparent; border: 1px solid var(--accent); border-radius: 50px; padding: 6px 20px; color: var(--accent); font-size: 0.85rem; transition: all 0.3s; text-decoration: none; }
+    .btn-logout:hover { background: rgba(100,255,218,0.1); color: var(--accent); }
+
+    /* SIDEBAR */
+    .sidebar { background: var(--bg-secondary); border-right: 1px solid var(--border); min-height: calc(100vh - 60px); padding: 24px 0; position: sticky; top: 60px; height: calc(100vh - 60px); overflow-y: auto; }
+    .sidebar .nav-link { color: var(--text-secondary); padding: 11px 20px; border-radius: 8px; margin: 2px 12px; transition: all 0.25s; font-size: 0.88rem; display: flex; align-items: center; gap: 12px; border-left: 2px solid transparent; }
+    .sidebar .nav-link:hover { color: var(--accent); background: rgba(100,255,218,0.05); border-left-color: var(--accent); padding-left: 24px; }
+    .sidebar .nav-link.active { color: var(--accent); background: rgba(100,255,218,0.08); border-left-color: var(--accent); }
+    .sidebar .nav-link i { width: 16px; text-align: center; font-size: 0.85rem; }
+    .sidebar-label { color: var(--accent); font-size: 0.68rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; padding: 16px 20px 6px; opacity: 0.7; }
+
+    /* CARDS */
+    .card { background: var(--bg-card) !important; border: 1px solid var(--border) !important; border-radius: 12px !important; color: var(--text-primary) !important; transition: all 0.3s; }
+    .card:hover { border-color: rgba(100,255,218,0.2) !important; }
+    .card-header { background: rgba(100,255,218,0.03) !important; border-bottom: 1px solid var(--border) !important; border-radius: 12px 12px 0 0 !important; color: var(--text-primary) !important; padding: 16px 20px; }
+    .card-body { background: var(--bg-card) !important; border-radius: 0 0 12px 12px; }
+
+    /* STAT CARDS */
+    .stat-card { background: var(--bg-card) !important; border: 1px solid var(--border) !important; border-radius: 12px !important; padding: 24px; position: relative; overflow: hidden; transition: all 0.3s; }
+    .stat-card::before { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%; border-radius: 12px 0 0 12px; }
+    .stat-card-1::before { background: var(--accent); }
+    .stat-card-2::before { background: var(--danger); }
+    .stat-card-3::before { background: #4ecca3; }
+    .stat-card-4::before { background: var(--warning); }
+    .stat-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+    .stat-number { font-size: 1.9rem; font-weight: 700; }
+    .stat-label { color: var(--text-secondary); font-size: 0.82rem; margin-top: 4px; }
+    .stat-icon { font-size: 2rem; opacity: 0.2; }
+
+    /* HERO */
+    .hero-banner { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 32px; margin-bottom: 28px; }
+    .hero-banner h2 { color: var(--text-primary); font-weight: 700; }
+    .hero-banner p { color: var(--text-secondary); }
+
+    /* BUTTONS */
+    .btn-primary { background: transparent !important; border: 1px solid var(--accent) !important; color: var(--accent) !important; border-radius: 6px; padding: 8px 22px; font-size: 0.88rem; transition: all 0.3s; }
+    .btn-primary:hover { background: rgba(100,255,218,0.1) !important; }
+    .btn-sm { padding: 5px 14px !important; font-size: 0.8rem !important; }
+    .btn-outline-primary { border-color: var(--accent) !important; color: var(--accent) !important; border-radius: 6px; }
+    .btn-outline-primary:hover { background: rgba(100,255,218,0.1) !important; color: var(--accent) !important; }
+    .btn-outline-secondary { border-color: var(--border) !important; color: var(--text-secondary) !important; border-radius: 6px; }
+    .btn-outline-danger { border-color: rgba(255,107,107,0.5) !important; color: var(--danger) !important; border-radius: 6px; }
+    .btn-outline-danger:hover { background: rgba(255,107,107,0.1) !important; color: var(--danger) !important; }
+    .btn-outline-success { border-color: rgba(100,255,218,0.5) !important; color: var(--accent) !important; border-radius: 6px; }
+    .btn-warning { background: var(--warning) !important; border: none !important; color: #000 !important; border-radius: 6px; }
+    .btn-success { background: rgba(100,255,218,0.15) !important; border: 1px solid var(--accent) !important; color: var(--accent) !important; border-radius: 6px; }
+    .btn-outline-dark { border-color: var(--border) !important; color: var(--text-secondary) !important; border-radius: 6px; }
+
+    /* TABLES - FIXED */
+    .table { color: var(--text-primary) !important; border-color: var(--border) !important; }
+    .table * { color: #ccd6f6 !important; }
+.table-hover > tbody > tr:hover > * { color: white !important; background-color: rgba(100,255,218,0.05) !important; }
+.table > :not(caption) > * > * { background-color: transparent !important; color: #ccd6f6 !important; }
+
+    .table thead tr { background: rgba(100,255,218,0.05) !important; }
+    .table thead th { background: rgba(100,255,218,0.05) !important; color: var(--accent) !important; border-color: var(--border) !important; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; padding: 14px 16px; }
+    .table tbody tr { background: var(--bg-card) !important; }
+    .table tbody tr:nth-child(even) { background: rgba(10,25,47,0.8) !important; }
+    .table tbody tr:hover { background: rgba(100,255,218,0.05) !important; }
+    .table td { border-color: rgba(100,255,218,0.05) !important; color: var(--text-primary) !important; padding: 12px 16px; vertical-align: middle; }
+    .table-hover tbody tr:hover td { color: white !important; }
+
+    /* FORM CONTROLS */
+    .form-control, .form-select { background: var(--bg-secondary) !important; border: 1px solid var(--border) !important; border-radius: 8px !important; color: var(--text-primary) !important; padding: 10px 16px; }
+    .form-control:focus, .form-select:focus { background: var(--bg-card) !important; border-color: var(--accent) !important; box-shadow: 0 0 0 3px rgba(100,255,218,0.08) !important; color: var(--text-primary) !important; }
+    .form-control::placeholder { color: var(--text-secondary) !important; }
+    .form-select option { background: var(--bg-secondary) !important; color: var(--text-primary); }
+    .form-label { color: var(--text-secondary) !important; font-size: 0.82rem; font-weight: 500; margin-bottom: 6px; }
+
+    /* ALERTS */
+    .alert { background: var(--bg-card) !important; border-radius: 8px !important; font-size: 0.88rem; }
+    .alert-danger { border-color: rgba(255,107,107,0.3) !important; color: var(--danger) !important; }
+    .alert-success { border-color: rgba(100,255,218,0.3) !important; color: var(--accent) !important; }
+    .alert-warning { border-color: rgba(255,217,61,0.3) !important; color: var(--warning) !important; }
+    .alert-info { border-color: rgba(0,180,216,0.3) !important; color: var(--accent2) !important; }
+
+    /* BADGES */
+    .badge { border-radius: 4px !important; font-weight: 500 !important; font-size: 0.75rem !important; }
+    .bg-success { background: rgba(100,255,218,0.15) !important; color: var(--accent) !important; }
+    .bg-danger { background: rgba(255,107,107,0.15) !important; color: var(--danger) !important; }
+    .bg-primary { background: rgba(0,180,216,0.15) !important; color: var(--accent2) !important; }
+    .bg-warning { background: rgba(255,217,61,0.15) !important; color: var(--warning) !important; }
+    .bg-secondary { background: rgba(136,146,176,0.15) !important; color: var(--text-secondary) !important; }
+    .bg-light { background: rgba(100,255,218,0.08) !important; color: var(--accent) !important; }
+
+    /* TEXT */
+    .text-danger { color: var(--danger) !important; }
+    .text-success { color: var(--accent) !important; }
+    .text-warning { color: var(--warning) !important; }
+    .text-muted { color: var(--text-secondary) !important; }
+    .text-primary { color: var(--accent2) !important; }
+    .fw-bold, .fw-600, .fw-500 { font-weight: 600 !important; }
+
+    /* FORECAST CHIP */
+    .forecast-chip { display: inline-block; background: rgba(100,255,218,0.08); border: 1px solid rgba(100,255,218,0.2); color: var(--accent); padding: 3px 10px; border-radius: 4px; margin: 2px; font-size: 0.78rem; font-family: 'Courier New', monospace; }
+    .metrics-table td, .metrics-table th { font-size: 0.82rem; }
+
+    /* QUICK ACTION CARDS */
+    .quick-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; text-align: center; transition: all 0.3s; text-decoration: none; display: block; color: var(--text-primary); }
+    .quick-card:hover { border-color: var(--accent); transform: translateY(-4px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); color: var(--accent); }
+    .quick-card i { font-size: 1.8rem; color: var(--accent); margin-bottom: 10px; display: block; }
+    .quick-card h6 { font-weight: 600; font-size: 0.9rem; margin-bottom: 4px; color: var(--text-primary); }
+    .quick-card small { color: var(--text-secondary); font-size: 0.78rem; }
+
+    /* SCROLLBAR */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg-primary); }
+    ::-webkit-scrollbar-thumb { background: rgba(100,255,218,0.3); border-radius: 3px; }
+
+    /* ANIMATIONS */
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-in { animation: fadeInUp 0.4s ease forwards; }
+    .glow { text-shadow: 0 0 20px rgba(100,255,218,0.4); }
+    hr { border-color: var(--border) !important; }
   </style>
   {% block extra_css %}{% endblock %}
 </head>
 <body>
 
 {% if user.is_authenticated %}
-<nav class="navbar navbar-expand-lg navbar-dark">
+<nav class="navbar navbar-expand-lg">
   <div class="container-fluid">
-    <a class="navbar-brand fw-bold" href="{% url 'dashboard' %}">
+    <a class="navbar-brand" href="{% url 'dashboard' %}">
       <i class="fas fa-virus me-2"></i>COVID-19 Forecasting
     </a>
     <div class="ms-auto d-flex align-items-center gap-3">
-      <span class="text-light"><i class="fas fa-user-circle me-1"></i>{{ user.first_name|default:user.username }}</span>
-      <a href="{% url 'logout' %}" class="btn btn-sm btn-outline-light">
-        <i class="fas fa-sign-out-alt"></i> Logout
+      <span class="nav-user">
+        <i class="fas fa-circle me-1" style="color:var(--accent);font-size:0.5rem;"></i>
+        {{ user.first_name|default:user.username }}
+      </span>
+      <a href="{% url 'logout' %}" class="btn-logout">
+        <i class="fas fa-sign-out-alt me-1"></i>Logout
       </a>
     </div>
   </div>
 </nav>
 
-<div class="container-fluid">
-  <div class="row">
-    <div class="col-md-2 sidebar p-0">
-      <ul class="nav flex-column pt-3">
+<div class="container-fluid p-0">
+  <div class="row g-0">
+    <div class="col-md-2 sidebar">
+      <ul class="nav flex-column">
         <li class="nav-item">
           <a class="nav-link {% block nav_dashboard %}{% endblock %}" href="{% url 'dashboard' %}">
-            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+            <i class="fas fa-tachometer-alt"></i>Dashboard
           </a>
         </li>
         <li class="nav-item">
           <a class="nav-link {% block nav_data %}{% endblock %}" href="{% url 'browse_datasets' %}">
-            <i class="fas fa-database me-2"></i>COVID-19 Data
+            <i class="fas fa-database"></i>COVID-19 Data
           </a>
         </li>
         <li class="nav-item">
           <a class="nav-link {% block nav_predict %}{% endblock %}" href="{% url 'prediction' %}">
-            <i class="fas fa-chart-line me-2"></i>Forecasting
+            <i class="fas fa-chart-line"></i>Forecasting
           </a>
         </li>
         <li class="nav-item">
           <a class="nav-link {% block nav_charts %}{% endblock %}" href="{% url 'charts' %}">
-            <i class="fas fa-chart-pie me-2"></i>Charts
+            <i class="fas fa-chart-pie"></i>Charts
           </a>
         </li>
         {% if user.profile.is_server_admin %}
-        <li class="nav-item mt-2">
-          <small class="text-muted px-3">ADMIN</small>
-        </li>
+        <div class="sidebar-label">Admin</div>
         <li class="nav-item">
           <a class="nav-link" href="{% url 'add_dataset' %}">
-            <i class="fas fa-plus-circle me-2"></i>Add Data
+            <i class="fas fa-plus-circle"></i>Add Data
           </a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="{% url 'view_predictions' %}">
-            <i class="fas fa-list me-2"></i>Saved Results
+            <i class="fas fa-list"></i>Saved Results
           </a>
         </li>
         {% endif %}
-        <li class="nav-item mt-3">
+        <div class="sidebar-label">Account</div>
+        <li class="nav-item">
           <a class="nav-link {% block nav_profile %}{% endblock %}" href="{% url 'profile' %}">
-            <i class="fas fa-user me-2"></i>My Profile
+            <i class="fas fa-user"></i>My Profile
           </a>
         </li>
       </ul>
     </div>
 
-    <div class="col-md-10 p-4">
+    <div class="col-md-10 p-4 fade-in" style="background:var(--bg-primary);">
       {% if messages %}
         {% for msg in messages %}
-          <div class="alert alert-{{ msg.tags|default:'info' }} alert-dismissible fade show">
-            {{ msg }} <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          <div class="alert alert-{{ msg.tags|default:'info' }} alert-dismissible fade show mb-3">
+            <i class="fas fa-info-circle me-2"></i>{{ msg }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" style="filter:invert(0.5);"></button>
           </div>
         {% endfor %}
       {% endif %}

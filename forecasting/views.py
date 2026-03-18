@@ -1,5 +1,6 @@
 import json
 import csv
+import requests
 from datetime import date, timedelta
 
 from django.shortcuts import render, redirect
@@ -293,3 +294,38 @@ def charts_view(request):
 def profile_view(request):
     profile = getattr(request.user, 'profile', None)
     return render(request, 'forecasting/profile.html', {'profile': profile})
+@login_required
+def fetch_live_data(request):
+    """Fetch live COVID-19 data from disease.sh API"""
+    if not request.user.profile.is_server_admin:
+        messages.error(request, "Admin access required.")
+        return redirect('dashboard')
+    try:
+        response = requests.get(
+            'https://disease.sh/v3/covid-19/countries?sort=cases',
+            timeout=10
+        )
+        data = response.json()
+        count = 0
+        for country in data[:20]:
+            from datetime import date
+            CovidDataset.objects.get_or_create(
+                province_or_state=country.get('country', ''),
+                country_or_region=country.get('country', ''),
+                from_date='2024-01-01',
+                defaults={
+                    'latitude': country.get('countryInfo', {}).get('lat', 0),
+                    'longitude': country.get('countryInfo', {}).get('long', 0),
+                    'to_date': str(date.today()),
+                    'number_of_days': 365,
+                    'new_cases': country.get('todayCases', 0),
+                    'death_cases': country.get('todayDeaths', 0),
+                    'recovery_cases': country.get('recovered', 0),
+                    'ongoing_treatment_cases': country.get('active', 0),
+                }
+            )
+            count += 1
+        messages.success(request, f"Loaded live data for {count} countries!")
+    except Exception as e:
+        messages.error(request, f"Could not fetch live data: {str(e)}")
+    return redirect('browse_datasets')

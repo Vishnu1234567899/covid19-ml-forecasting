@@ -3,113 +3,125 @@
 {% block nav_dashboard %}active{% endblock %}
 
 {% block content %}
-<div class="hero-banner">
+<!-- HERO -->
+<div class="hero-banner mb-4">
   <div class="row align-items-center">
     <div class="col-md-8">
-      <h2 class="fw-bold mb-1"><i class="fas fa-virus me-2"></i>COVID-19 Future Forecasting</h2>
-      <p class="mb-0 opacity-75">Using Supervised Machine Learning — LR · LASSO · SVM · Exponential Smoothing</p>
+      <h2 class="fw-bold mb-1 glow">
+        <i class="fas fa-virus me-2" style="color:var(--accent);"></i>COVID-19 Future Forecasting
+      </h2>
+      <p class="mb-0" style="color:var(--text-secondary);">
+        Supervised Machine Learning &nbsp;·&nbsp; LR &nbsp;·&nbsp; LASSO &nbsp;·&nbsp; SVM &nbsp;·&nbsp; Exponential Smoothing
+      </p>
     </div>
     <div class="col-md-4 text-end">
-      <span class="badge bg-light text-dark fs-6 px-3 py-2">
-        {% if is_admin %}<i class="fas fa-shield-alt me-1"></i>Server Admin
-        {% else %}<i class="fas fa-user me-1"></i>Remote User{% endif %}
+      <span class="badge bg-light px-3 py-2" style="font-size:0.85rem;">
+        {% if is_admin %}
+          <i class="fas fa-shield-alt me-1"></i>Server Admin
+        {% else %}
+          <i class="fas fa-user me-1"></i>Remote User
+        {% endif %}
       </span>
     </div>
   </div>
 </div>
 
+<!-- STAT CARDS -->
 <div class="row g-3 mb-4">
   <div class="col-md-3">
-    <div class="card stat-card p-3">
-      <div class="d-flex align-items-center">
-        <i class="fas fa-database fa-2x me-3 opacity-75"></i>
+    <div class="stat-card stat-card-1">
+      <div class="d-flex justify-content-between align-items-start">
         <div>
-          <div class="stat-number">{{ total_datasets }}</div>
-          <small class="opacity-75">Dataset Records</small>
+          <div class="stat-number" style="color:var(--accent);">{{ total_datasets }}</div>
+          <div class="stat-label">Dataset Records</div>
         </div>
+        <i class="fas fa-database stat-icon" style="color:var(--accent);"></i>
       </div>
     </div>
   </div>
   <div class="col-md-3">
-    <div class="card p-3" style="background:linear-gradient(135deg,#e74c3c,#c0392b);color:white;">
-      <div class="d-flex align-items-center">
-        <i class="fas fa-skull-crossbones fa-2x me-3 opacity-75"></i>
+    <div class="stat-card stat-card-2">
+      <div class="d-flex justify-content-between align-items-start">
         <div>
-          <div class="stat-number">{{ stats.total_deaths|default:0 }}</div>
-          <small class="opacity-75">Total Deaths</small>
+          <div class="stat-number" style="color:var(--danger);">{{ stats.total_deaths|default:0 }}</div>
+          <div class="stat-label">Total Deaths</div>
         </div>
+        <i class="fas fa-skull-crossbones stat-icon" style="color:var(--danger);"></i>
       </div>
     </div>
   </div>
   <div class="col-md-3">
-    <div class="card p-3" style="background:linear-gradient(135deg,#27ae60,#1e8449);color:white;">
-      <div class="d-flex align-items-center">
-        <i class="fas fa-heartbeat fa-2x me-3 opacity-75"></i>
+    <div class="stat-card stat-card-3">
+      <div class="d-flex justify-content-between align-items-start">
         <div>
-          <div class="stat-number">{{ stats.total_recoveries|default:0 }}</div>
-          <small class="opacity-75">Total Recoveries</small>
+          <div class="stat-number" style="color:#4ecca3;">{{ stats.total_recoveries|default:0 }}</div>
+          <div class="stat-label">Total Recoveries</div>
         </div>
+        <i class="fas fa-heartbeat stat-icon" style="color:#4ecca3;"></i>
       </div>
     </div>
   </div>
   <div class="col-md-3">
-    <div class="card p-3" style="background:linear-gradient(135deg,#f39c12,#d68910);color:white;">
-      <div class="d-flex align-items-center">
-        <i class="fas fa-chart-line fa-2x me-3 opacity-75"></i>
+    <div class="stat-card stat-card-4">
+      <div class="d-flex justify-content-between align-items-start">
         <div>
-          <div class="stat-number">{{ total_predictions }}</div>
-          <small class="opacity-75">Predictions Made</small>
+          <div class="stat-number" style="color:var(--warning);">{{ total_predictions }}</div>
+          <div class="stat-label">Predictions Made</div>
         </div>
+        <i class="fas fa-chart-line stat-icon" style="color:var(--warning);"></i>
       </div>
     </div>
   </div>
 </div>
 
+<!-- QUICK ACTIONS -->
 <div class="row g-3 mb-4">
   <div class="col-md-3">
-    <a href="{% url 'prediction' %}" class="text-decoration-none">
-      <div class="card p-3 text-center h-100">
-        <i class="fas fa-chart-line fa-2x mb-2" style="color:#e94560;"></i>
-        <h6 class="fw-bold">Run Forecasting</h6>
-        <small class="text-muted">Predict next 10 days</small>
-      </div>
+    <a href="{% url 'prediction' %}" class="quick-card">
+      <i class="fas fa-chart-line"></i>
+      <h6>Run Forecasting</h6>
+      <small>Predict next 10 days</small>
     </a>
   </div>
   <div class="col-md-3">
-    <a href="{% url 'browse_datasets' %}" class="text-decoration-none">
-      <div class="card p-3 text-center h-100">
-        <i class="fas fa-table fa-2x mb-2" style="color:#0f3460;"></i>
-        <h6 class="fw-bold">Browse Data</h6>
-        <small class="text-muted">View all records</small>
-      </div>
+    <a href="{% url 'browse_datasets' %}" class="quick-card">
+      <i class="fas fa-table"></i>
+      <h6>Browse Data</h6>
+      <small>View all COVID-19 records</small>
     </a>
   </div>
   <div class="col-md-3">
-    <a href="{% url 'charts' %}" class="text-decoration-none">
-      <div class="card p-3 text-center h-100">
-        <i class="fas fa-chart-pie fa-2x mb-2" style="color:#27ae60;"></i>
-        <h6 class="fw-bold">View Charts</h6>
-        <small class="text-muted">Pie and Bar charts</small>
-      </div>
+    <a href="{% url 'charts' %}" class="quick-card">
+      <i class="fas fa-chart-pie"></i>
+      <h6>View Charts</h6>
+      <small>Pie and Bar charts</small>
     </a>
   </div>
   {% if is_admin %}
   <div class="col-md-3">
-    <a href="{% url 'load_sample_data' %}" class="text-decoration-none">
-      <div class="card p-3 text-center h-100">
-        <i class="fas fa-upload fa-2x mb-2" style="color:#f39c12;"></i>
-        <h6 class="fw-bold">Load Sample Data</h6>
-        <small class="text-muted">Populate demo dataset</small>
-      </div>
+    <a href="{% url 'load_sample_data' %}" class="quick-card">
+      <i class="fas fa-upload"></i>
+      <h6>Load Sample Data</h6>
+      <small>Populate demo dataset</small>
+    </a>
+  </div>
+  <div class="col-md-3">
+    <a href="{% url 'fetch_live_data' %}" class="quick-card">
+      <i class="fas fa-satellite-dish"></i>
+      <h6>Fetch Live Data</h6>
+      <small>Get real COVID-19 data</small>
     </a>
   </div>
   {% endif %}
 </div>
 
+<!-- RECENT DATA TABLE -->
 <div class="card mb-4">
-  <div class="card-header d-flex justify-content-between align-items-center" style="background:#0f3460;color:white;">
-    <h5 class="mb-0"><i class="fas fa-list me-2"></i>Recent COVID-19 Records</h5>
-    <a href="{% url 'browse_datasets' %}" class="btn btn-sm btn-light">View All</a>
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h6 class="mb-0 fw-600" style="color:var(--accent);">
+      <i class="fas fa-list me-2"></i>Recent COVID-19 Records
+    </h6>
+    <a href="{% url 'browse_datasets' %}" class="btn btn-primary btn-sm">View All</a>
   </div>
   <div class="card-body p-0">
     <div class="table-responsive">
@@ -117,29 +129,28 @@
         <thead>
           <tr>
             <th>Country</th><th>Province</th><th>From</th><th>To</th>
-            <th class="text-danger">Deaths</th>
-            <th class="text-success">Recoveries</th>
-            <th class="text-primary">New Cases</th>
+            <th>Deaths</th><th>Recoveries</th><th>New Cases</th>
           </tr>
         </thead>
         <tbody>
           {% for d in recent_data %}
           <tr>
-            <td><strong>{{ d.country_or_region }}</strong></td>
-            <td>{{ d.province_or_state }}</td>
-            <td>{{ d.from_date }}</td>
-            <td>{{ d.to_date }}</td>
-            <td class="text-danger fw-bold">{{ d.death_cases }}</td>
-            <td class="text-success fw-bold">{{ d.recovery_cases }}</td>
-            <td class="text-primary fw-bold">{{ d.new_cases }}</td>
+            <td class="fw-500">{{ d.country_or_region }}</td>
+            <td style="color:var(--text-secondary);">{{ d.province_or_state }}</td>
+            <td style="color:var(--text-secondary);">{{ d.from_date }}</td>
+            <td style="color:var(--text-secondary);">{{ d.to_date }}</td>
+            <td style="color:var(--danger);font-weight:600;">{{ d.death_cases }}</td>
+            <td style="color:var(--accent);font-weight:600;">{{ d.recovery_cases }}</td>
+            <td style="color:var(--accent2);font-weight:600;">{{ d.new_cases }}</td>
           </tr>
           {% empty %}
-          <tr><td colspan="7" class="text-center py-4 text-muted">
-            No data yet.
-            {% if is_admin %}
-            <a href="{% url 'load_sample_data' %}">Load sample data</a>
-            {% endif %}
-          </td></tr>
+          <tr>
+            <td colspan="7" class="text-center py-5" style="color:var(--text-secondary);">
+              <i class="fas fa-inbox fa-2x mb-2 d-block" style="opacity:0.3;"></i>
+              No data yet.
+              {% if is_admin %}<a href="{% url 'load_sample_data' %}" style="color:var(--accent);">Load sample data</a>{% endif %}
+            </td>
+          </tr>
           {% endfor %}
         </tbody>
       </table>
@@ -147,27 +158,29 @@
   </div>
 </div>
 
+<!-- REGISTERED USERS (Admin Only) -->
 {% if is_admin and all_users %}
 <div class="card">
-  <div class="card-header" style="background:#0f3460;color:white;">
-    <h5 class="mb-0"><i class="fas fa-users me-2"></i>Registered Users</h5>
+  <div class="card-header">
+    <h6 class="mb-0" style="color:var(--accent);">
+      <i class="fas fa-users me-2"></i>Registered Users
+    </h6>
   </div>
   <div class="card-body p-0">
     <div class="table-responsive">
       <table class="table table-hover mb-0">
         <thead>
-          <tr><th>Username</th><th>Name</th><th>Mobile</th><th>Country</th><th>State</th><th>City</th><th>Joined</th></tr>
+          <tr><th>Username</th><th>Name</th><th>Mobile</th><th>Country</th><th>City</th><th>Joined</th></tr>
         </thead>
         <tbody>
           {% for u in all_users %}
           <tr>
-            <td>{{ u.username }}</td>
+            <td style="color:var(--accent);">{{ u.username }}</td>
             <td>{{ u.first_name }}</td>
-            <td>{{ u.profile.mobile|default:"-" }}</td>
-            <td>{{ u.profile.country|default:"-" }}</td>
-            <td>{{ u.profile.state|default:"-" }}</td>
-            <td>{{ u.profile.city|default:"-" }}</td>
-            <td>{{ u.date_joined|date:"d M Y" }}</td>
+            <td style="color:var(--text-secondary);">{{ u.profile.mobile|default:"-" }}</td>
+            <td style="color:var(--text-secondary);">{{ u.profile.country|default:"-" }}</td>
+            <td style="color:var(--text-secondary);">{{ u.profile.city|default:"-" }}</td>
+            <td style="color:var(--text-secondary);">{{ u.date_joined|date:"d M Y" }}</td>
           </tr>
           {% endfor %}
         </tbody>
