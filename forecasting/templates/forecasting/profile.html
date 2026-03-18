@@ -1,0 +1,55 @@
+{% extends 'forecasting/base.html' %}
+{% block title %}My Profile{% endblock %}
+{% block nav_profile %}active{% endblock %}
+
+{% block content %}
+<div class="hero-banner">
+  <h3 class="fw-bold"><i class="fas fa-user-circle me-2"></i>My Profile</h3>
+</div>
+<div class="row g-4">
+  <div class="col-md-4">
+    <div class="card text-center p-4">
+      <i class="fas fa-user-circle fa-5x mb-3" style="color:#0f3460;"></i>
+      <h4 class="fw-bold">{{ user.first_name|default:user.username }}</h4>
+      <span class="badge {% if profile.is_server_admin %}bg-danger{% else %}bg-primary{% endif %} px-3 py-2">
+        {% if profile.is_server_admin %}Server Admin{% else %}Remote User{% endif %}
+      </span>
+    </div>
+  </div>
+  <div class="col-md-8">
+    <div class="card p-4">
+      <h5 class="fw-bold mb-4 border-bottom pb-2">Account Details</h5>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="text-muted small">USERNAME</label>
+          <p class="fw-bold">{{ user.username }}</p>
+        </div>
+        <div class="col-md-6">
+          <label class="text-muted small">FULL NAME</label>
+          <p class="fw-bold">{{ user.first_name|default:"Not set" }}</p>
+        </div>
+        <div class="col-md-6">
+          <label class="text-muted small">MOBILE</label>
+          <p class="fw-bold">{{ profile.mobile|default:"Not set" }}</p>
+        </div>
+        <div class="col-md-6">
+          <label class="text-muted small">COUNTRY</label>
+          <p class="fw-bold">{{ profile.country|default:"Not set" }}</p>
+        </div>
+        <div class="col-md-6">
+          <label class="text-muted small">STATE</label>
+          <p class="fw-bold">{{ profile.state|default:"Not set" }}</p>
+        </div>
+        <div class="col-md-6">
+          <label class="text-muted small">CITY</label>
+          <p class="fw-bold">{{ profile.city|default:"Not set" }}</p>
+        </div>
+        <div class="col-md-6">
+          <label class="text-muted small">JOINED ON</label>
+          <p class="fw-bold">{{ user.date_joined|date:"d M Y" }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

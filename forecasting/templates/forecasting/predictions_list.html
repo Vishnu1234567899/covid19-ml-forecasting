@@ -1,0 +1,42 @@
+{% extends 'forecasting/base.html' %}
+{% block title %}Saved Predictions{% endblock %}
+
+{% block content %}
+<div class="hero-banner">
+  <h3 class="fw-bold"><i class="fas fa-list me-2"></i>Saved Prediction Results</h3>
+</div>
+<div class="mb-3 d-flex gap-2 flex-wrap">
+  <a href="?type=new_cases" class="btn {% if prediction_type == 'new_cases' %}btn-primary{% else %}btn-outline-primary{% endif %}">New Cases</a>
+  <a href="?type=death_cases" class="btn {% if prediction_type == 'death_cases' %}btn-danger{% else %}btn-outline-danger{% endif %}">Deaths</a>
+  <a href="?type=recovery_cases" class="btn {% if prediction_type == 'recovery_cases' %}btn-success{% else %}btn-outline-success{% endif %}">Recoveries</a>
+  <a href="{% url 'extract_predictions' prediction_type %}" class="btn btn-outline-dark ms-auto">
+    <i class="fas fa-download me-1"></i>Export CSV
+  </a>
+</div>
+<div class="card">
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr><th>Model</th><th>Country</th><th>Date</th><th>Predicted Value</th><th>R²</th><th>MAE</th><th>RMSE</th></tr>
+      </thead>
+      <tbody>
+        {% for p in predictions %}
+        <tr>
+          <td><span class="badge bg-secondary">{{ p.get_model_name_display }}</span></td>
+          <td>{{ p.country }}</td>
+          <td>{{ p.prediction_date }}</td>
+          <td class="fw-bold">{{ p.predicted_value|floatformat:0 }}</td>
+          <td>{{ p.r2_score|floatformat:4 }}</td>
+          <td>{{ p.mae|floatformat:2 }}</td>
+          <td>{{ p.rmse|floatformat:2 }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" class="text-center py-4 text-muted">
+          No predictions yet. Run forecasting first.
+        </td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

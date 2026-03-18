@@ -1,0 +1,65 @@
+{% extends 'forecasting/base.html' %}
+{% block title %}Add Dataset{% endblock %}
+
+{% block content %}
+<div class="hero-banner">
+  <h3 class="fw-bold"><i class="fas fa-plus-circle me-2"></i>Add COVID-19 Data Record</h3>
+</div>
+<div class="card">
+  <div class="card-body">
+    <form method="POST" class="row g-3">
+      {% csrf_token %}
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">Province / State</label>
+        <input type="text" name="province_or_state" class="form-control" required/>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">Country / Region</label>
+        <input type="text" name="country_or_region" class="form-control" required/>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">Latitude</label>
+        <input type="number" step="any" name="latitude" class="form-control" required/>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">Longitude</label>
+        <input type="number" step="any" name="longitude" class="form-control" required/>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">From Date</label>
+        <input type="date" name="from_date" class="form-control" required/>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">To Date</label>
+        <input type="date" name="to_date" class="form-control" required/>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label fw-semibold">Number of Days</label>
+        <input type="number" name="number_of_days" class="form-control" required/>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label fw-semibold">New Cases</label>
+        <input type="number" name="new_cases" class="form-control" value="0"/>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label fw-semibold">Death Cases</label>
+        <input type="number" name="death_cases" class="form-control" value="0"/>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">Recovery Cases</label>
+        <input type="number" name="recovery_cases" class="form-control" value="0"/>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">Ongoing Treatment</label>
+        <input type="number" name="ongoing_treatment_cases" class="form-control" value="0"/>
+      </div>
+      <div class="col-12">
+        <button type="submit" class="btn btn-primary px-4 py-2 fw-bold">
+          <i class="fas fa-save me-2"></i>Save Record
+        </button>
+        <a href="{% url 'browse_datasets' %}" class="btn btn-outline-secondary px-4 py-2 ms-2">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

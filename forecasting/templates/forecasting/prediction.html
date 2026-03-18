@@ -1,0 +1,160 @@
+{% extends 'forecasting/base.html' %}
+{% block title %}Forecasting - COVID-19{% endblock %}
+{% block nav_predict %}active{% endblock %}
+
+{% block content %}
+<div class="hero-banner">
+  <h3 class="fw-bold"><i class="fas fa-chart-line me-2"></i>COVID-19 Forecasting Engine</h3>
+  <p class="mb-0 opacity-75">Predict next 10 days using LR · LASSO · SVM · Exponential Smoothing</p>
+</div>
+
+<div class="card mb-4">
+  <div class="card-header" style="background:#0f3460;color:white;">
+    <h5 class="mb-0"><i class="fas fa-search me-2"></i>Select Parameters</h5>
+  </div>
+  <div class="card-body">
+    <form method="POST" class="row g-3 align-items-end">
+      {% csrf_token %}
+      <div class="col-md-5">
+        <label class="form-label fw-semibold">Country / Region</label>
+        <select name="country" class="form-select" required>
+          <option value="">-- Select Country --</option>
+          {% for c in countries %}
+            <option value="{{ c }}" {% if c == selected_country %}selected{% endif %}>{{ c }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">Prediction Target</label>
+        <select name="target" class="form-select">
+          {% for key, label in target_map.items %}
+            <option value="{{ key }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">
+          <i class="fas fa-play me-2"></i>Run Forecasting
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% if results %}
+<div class="alert border-0 mb-4" style="background:linear-gradient(135deg,#27ae60,#1e8449);color:white;">
+  <div class="d-flex align-items-center">
+    <i class="fas fa-trophy fa-2x me-3"></i>
+    <div>
+      <h5 class="mb-0 fw-bold">Best Performing Model: {{ best_model }}</h5>
+      <p class="mb-0 opacity-90">ES performs best on small time-series datasets</p>
+    </div>
+  </div>
+</div>
+
+<div class="card mb-4">
+  <div class="card-header" style="background:#0f3460;color:white;">
+    <h5 class="mb-0"><i class="fas fa-chart-area me-2"></i>10-Day Forecast: {{ target_label }} — {{ selected_country }}</h5>
+  </div>
+  <div class="card-body">
+    <canvas id="forecastChart" height="100"></canvas>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  {% for key, res in results.items %}
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-header d-flex justify-content-between align-items-center
+        {% if key == 'ES' %}bg-success
+        {% elif key == 'LR' %}bg-primary
+        {% elif key == 'LASSO' %}bg-warning
+        {% else %}bg-danger{% endif %} text-white">
+        <h6 class="mb-0 fw-bold">
+          <i class="fas fa-robot me-2"></i>{{ res.model_name }}
+          {% if key == best_model %}<span class="badge bg-light text-dark ms-2">Best</span>{% endif %}
+        </h6>
+        <small>Train: {{ res.train_size }} | Test: {{ res.test_size }}</small>
+      </div>
+      <div class="card-body">
+        <table class="table table-sm metrics-table mb-3">
+          <thead class="table-light">
+            <tr><th>Metric</th><th>Value</th><th>Metric</th><th>Value</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>R² Score</td><td class="fw-bold text-success">{{ res.metrics.r2 }}</td>
+              <td>Adj R²</td><td class="fw-bold">{{ res.metrics.adj_r2 }}</td>
+            </tr>
+            <tr>
+              <td>MSE</td><td class="text-danger">{{ res.metrics.mse }}</td>
+              <td>MAE</td><td class="text-danger">{{ res.metrics.mae }}</td>
+            </tr>
+            <tr>
+              <td>RMSE</td><td class="text-danger">{{ res.metrics.rmse }}</td>
+              <td>—</td><td>—</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="mb-1 fw-semibold small text-muted">10-DAY FORECAST VALUES:</p>
+        <div>
+          {% for val in res.forecast %}
+            <span class="forecast-chip">Day {{ forloop.counter }}: {{ val }}</span>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="card">
+  <div class="card-body d-flex gap-3 flex-wrap">
+    <span class="fw-semibold align-self-center"><i class="fas fa-download me-2"></i>Export:</span>
+    <a href="{% url 'extract_predictions' 'new_cases' %}" class="btn btn-outline-primary btn-sm">New Cases CSV</a>
+    <a href="{% url 'extract_predictions' 'death_cases' %}" class="btn btn-outline-danger btn-sm">Deaths CSV</a>
+    <a href="{% url 'extract_predictions' 'recovery_cases' %}" class="btn btn-outline-success btn-sm">Recoveries CSV</a>
+  </div>
+</div>
+
+{% elif request.method == "POST" %}
+<div class="alert alert-warning">
+  <i class="fas fa-exclamation-triangle me-2"></i>
+  Not enough data. Please load sample data first.
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const dates = {{ forecast_dates_json|safe }};
+const allResults = {{ results_json|safe }};
+const COLORS = {'ES':'#27ae60','LR':'#3498db','LASSO':'#f39c12','SVM':'#e74c3c'};
+
+if (dates.length > 0 && Object.keys(allResults).length > 0) {
+  const ctx = document.getElementById('forecastChart').getContext('2d');
+  const datasets = Object.entries(allResults).map(([key, vals]) => ({
+    label: key,
+    data: vals,
+    borderColor: COLORS[key] || '#666',
+    backgroundColor: (COLORS[key] || '#666') + '20',
+    fill: false,
+    tension: 0.4,
+    pointRadius: 5,
+    borderWidth: 2,
+  }));
+  new Chart(ctx, {
+    type: 'line',
+    data: { labels: dates, datasets },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: 'top' } },
+      scales: {
+        y: { beginAtZero: true },
+        x: { title: { display: true, text: 'Forecast Date' } }
+      }
+    }
+  });
+}
+</script>
+{% endblock %}

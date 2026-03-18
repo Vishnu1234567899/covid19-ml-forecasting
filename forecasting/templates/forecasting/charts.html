@@ -1,0 +1,91 @@
+{% extends 'forecasting/base.html' %}
+{% block title %}Charts - COVID-19{% endblock %}
+{% block nav_charts %}active{% endblock %}
+
+{% block content %}
+<div class="hero-banner">
+  <h3 class="fw-bold"><i class="fas fa-chart-pie me-2"></i>COVID-19 Data Visualizations</h3>
+  <p class="mb-0 opacity-75">Bar and Pie charts aggregated by country</p>
+</div>
+
+<div class="row g-4">
+  <div class="col-md-7">
+    <div class="card h-100">
+      <div class="card-header" style="background:#0f3460;color:white;">
+        <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Deaths by Country</h5>
+      </div>
+      <div class="card-body">
+        <canvas id="barChart" height="300"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-5">
+    <div class="card h-100">
+      <div class="card-header" style="background:#0f3460;color:white;">
+        <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>New Cases Distribution</h5>
+      </div>
+      <div class="card-body">
+        <canvas id="pieChart" height="300"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header" style="background:#0f3460;color:white;">
+        <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Recovery vs Death Cases</h5>
+      </div>
+      <div class="card-body">
+        <canvas id="lineChart" height="80"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const labels = {{ labels_json|safe }};
+const deaths = {{ deaths_json|safe }};
+const newCases = {{ new_cases_json|safe }};
+const recoveries = {{ recoveries_json|safe }};
+
+const PIE_COLORS = [
+  '#e94560','#0f3460','#27ae60','#f39c12','#8e44ad',
+  '#16a085','#e74c3c','#2980b9','#f1c40f','#1abc9c',
+  '#d35400','#2c3e50','#7f8c8d','#c0392b','#2ecc71'
+];
+
+new Chart(document.getElementById('barChart').getContext('2d'), {
+  type: 'bar',
+  data: {
+    labels,
+    datasets: [
+      { label: 'Deaths', data: deaths, backgroundColor: '#e9456099', borderColor: '#e94560', borderWidth: 1 },
+      { label: 'Recoveries', data: recoveries, backgroundColor: '#27ae6099', borderColor: '#27ae60', borderWidth: 1 },
+    ]
+  },
+  options: { responsive: true, plugins: { legend: { position: 'top' } } }
+});
+
+new Chart(document.getElementById('pieChart').getContext('2d'), {
+  type: 'pie',
+  data: {
+    labels,
+    datasets: [{ data: newCases, backgroundColor: PIE_COLORS, borderWidth: 1 }]
+  },
+  options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+});
+
+new Chart(document.getElementById('lineChart').getContext('2d'), {
+  type: 'line',
+  data: {
+    labels,
+    datasets: [
+      { label: 'Recoveries', data: recoveries, borderColor: '#27ae60', backgroundColor: '#27ae6020', fill: true, tension: 0.4 },
+      { label: 'Deaths', data: deaths, borderColor: '#e94560', backgroundColor: '#e9456020', fill: true, tension: 0.4 },
+    ]
+  },
+  options: { responsive: true, plugins: { legend: { position: 'top' } } }
+});
+</script>
+{% endblock %}
