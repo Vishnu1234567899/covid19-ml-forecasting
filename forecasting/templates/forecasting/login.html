@@ -1,53 +1,735 @@
-{% extends 'forecasting/base.html' %}
-{% block auth_content %}
-<div class="min-vh-100 d-flex align-items-center" style="position:relative;z-index:10;">
-  <div class="container">
-    <div class="row justify-content-center">
-      <div class="col-md-5">
-        <div class="text-center text-white mb-4">
-          <i class="fas fa-virus fa-3x mb-3" style="color:var(--accent);filter:drop-shadow(0 0 15px rgba(100,255,218,0.6));"></i>
-          <h2 class="fw-bold glow">COVID-19 Future Forecasting</h2>
-          <p style="color:var(--text-secondary);">Using Supervised Machine Learning Models</p>
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>COVID-19 Forecasting — Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;500;600;700&family=Orbitron:wght@700&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html,body{height:100%;font-family:'Exo 2',sans-serif;background:#0a1628;overflow:hidden;cursor:default;}
+    #globe-canvas{position:fixed;inset:0;width:100%;height:100%;z-index:0;}
+    #particle-canvas{position:fixed;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;}
+    .page{position:relative;z-index:10;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+    .card{
+      width:100%;max-width:420px;
+      background:rgba(5,15,40,0.08);
+      border:1px solid rgba(80,140,255,0.15);
+      border-radius:22px;padding:38px 36px 32px;
+      backdrop-filter:blur(3px) saturate(110%);
+      -webkit-backdrop-filter:blur(3px) saturate(110%);
+      box-shadow:0 0 0 1px rgba(255,255,255,0.1) inset,0 24px 60px rgba(0,0,0,0.3);
+      animation:cardIn 0.65s cubic-bezier(0.22,1,0.36,1) both;
+      position:relative;
+    }
+    @keyframes cardIn{from{opacity:0;transform:translateY(28px) scale(0.97);}to{opacity:1;transform:translateY(0) scale(1);}}
+    .card::before{content:'';position:absolute;top:0;left:36px;right:36px;height:2px;border-radius:0 0 4px 4px;background:linear-gradient(90deg,transparent,#3b82f6 30%,#06b6d4 65%,transparent);opacity:0.6;}
+    .logo-area{text-align:center;margin-bottom:24px;}
+    .logo-icon{display:inline-flex;align-items:center;justify-content:center;width:54px;height:54px;border-radius:14px;border:1px solid rgba(59,130,246,0.3);background:rgba(59,130,246,0.08);margin-bottom:12px;animation:pulse-icon 3s ease-in-out infinite;}
+    @keyframes pulse-icon{0%,100%{box-shadow:0 0 0 0 rgba(59,130,246,0.2);}50%{box-shadow:0 0 0 8px rgba(59,130,246,0);}}
+    .logo-title{font-family:'Orbitron',sans-serif;font-size:15px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;background:linear-gradient(90deg,#60a5fa,#38bdf8,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:4px;filter:drop-shadow(0 0 18px rgba(80,180,255,1.0)) drop-shadow(0 0 6px rgba(255,255,255,0.8));font-size:16px;}
+    /* BLACK subtitles */
+    .logo-sub{font-size:12px;color:#ffffff;letter-spacing:0.6px;font-weight:700;text-shadow:0 2px 8px rgba(0,0,0,0.9),0 0 16px rgba(80,160,255,0.8),0 0 4px rgba(255,255,255,0.6);}
+    .covid-label{font-size:12px;color:#ff7766;font-weight:700;letter-spacing:2px;margin-top:3px;text-shadow:0 2px 6px rgba(0,0,0,0.9),0 0 14px rgba(255,80,60,0.7);}
+    .divider{height:1px;background:linear-gradient(90deg,transparent,rgba(80,160,255,0.35),transparent);margin:0 0 22px;}
+    .alert{border-radius:10px;padding:10px 14px;font-size:12.5px;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+    .alert-error{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);color:#dc2626;}
+    .alert-success{background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.25);color:#2563eb;}
+    .form-group{margin-bottom:14px;}
+    label{display:block;font-size:10.5px;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;color:#a0c4ff;margin-bottom:6px;}
+    input[type="text"],input[type="password"],select{
+      width:100%;background:rgba(255,255,255,0.88);
+      border:1.5px solid rgba(59,130,246,0.65);border-radius:10px;
+      padding:11px 14px;font-family:'Exo 2',sans-serif;font-size:13px;color:#1e3a5f;
+      outline:none;transition:border-color 0.2s,box-shadow 0.2s,background 0.2s;
+      appearance:none;-webkit-appearance:none;box-shadow:0 0 0 3px rgba(59,130,246,0.1);
+    }
+    input[type="text"]:focus,input[type="password"]:focus,select:focus{border-color:rgba(59,130,246,0.9);background:rgba(255,255,255,0.96);box-shadow:0 0 0 4px rgba(59,130,246,0.18);}
+    input::placeholder{color:#94a3b8;}
+    select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%233b82f6' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;background-color:rgba(255,255,255,0.88);padding-right:36px;color:#1e3a5f;}
+    select option{background:#fff;color:#334155;}
+    .remember-row{display:flex;align-items:center;gap:8px;margin-bottom:20px;}
+    .remember-row input[type="checkbox"]{width:15px;height:15px;accent-color:#3b82f6;flex-shrink:0;}
+    .remember-row label{font-size:12px;text-transform:none;letter-spacing:0;color:#c0d8ff;margin:0;font-weight:400;}
+    .btn-login{width:100%;padding:12px;border:1.5px solid rgba(59,130,246,0.5);border-radius:10px;font-family:'Exo 2',sans-serif;font-size:13px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#88ccff;background:rgba(30,80,180,0.25);cursor:pointer;box-shadow:0 2px 12px rgba(59,130,246,0.08);transition:transform 0.15s,box-shadow 0.2s,background 0.2s;position:relative;overflow:hidden;}
+    .btn-login::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.06),transparent);pointer-events:none;}
+    .btn-login:hover{background:rgba(59,130,246,0.12);transform:translateY(-1px);box-shadow:0 6px 20px rgba(59,130,246,0.18);color:#60a5fa;}
+    .btn-login:active{transform:translateY(0);}
+    .register-row{text-align:center;margin-top:16px;font-size:12px;color:#c0d8ff;font-weight:400;}
+    .register-row a{color:#60b0ff;text-decoration:none;font-weight:600;}
+    .register-row a:hover{color:#88ddff;}
+    .card-footer{margin-top:20px;padding-top:14px;border-top:1px solid rgba(59,130,246,0.1);display:flex;align-items:center;justify-content:center;gap:6px;font-size:10px;color:#88aacc;letter-spacing:0.4px;font-weight:400;}
+    .status-dot{width:6px;height:6px;border-radius:50%;background:#3b82f6;animation:blink 2s ease-in-out infinite;}
+    @keyframes blink{0%,100%{opacity:1;}50%{opacity:0.25;}}
+  </style>
+</head>
+<body>
+  <canvas id="globe-canvas"></canvas>
+  <canvas id="particle-canvas"></canvas>
+
+  <div class="page">
+    <div class="card">
+      <div class="logo-area">
+        <div class="logo-icon">
+          <svg width="26" height="26" viewBox="0 0 28 28" fill="none">
+            <circle cx="14" cy="14" r="6" stroke="#3b82f6" stroke-width="1.6"/>
+            <circle cx="14" cy="14" r="2.5" fill="#3b82f6" opacity="0.4"/>
+            <line x1="14" y1="2" x2="14" y2="7" stroke="#06b6d4" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="14" y1="21" x2="14" y2="26" stroke="#06b6d4" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="2" y1="14" x2="7" y2="14" stroke="#06b6d4" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="21" y1="14" x2="26" y2="14" stroke="#06b6d4" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="5.7" y1="5.7" x2="9.2" y2="9.2" stroke="#3b82f6" stroke-width="1.4" stroke-linecap="round" opacity="0.6"/>
+            <line x1="18.8" y1="18.8" x2="22.3" y2="22.3" stroke="#3b82f6" stroke-width="1.4" stroke-linecap="round" opacity="0.6"/>
+            <line x1="22.3" y1="5.7" x2="18.8" y2="9.2" stroke="#3b82f6" stroke-width="1.4" stroke-linecap="round" opacity="0.6"/>
+            <line x1="9.2" y1="18.8" x2="5.7" y2="22.3" stroke="#3b82f6" stroke-width="1.4" stroke-linecap="round" opacity="0.6"/>
+            <circle cx="14" cy="2" r="1.3" fill="#06b6d4"/><circle cx="14" cy="26" r="1.3" fill="#06b6d4"/>
+            <circle cx="2" cy="14" r="1.3" fill="#06b6d4"/><circle cx="26" cy="14" r="1.3" fill="#06b6d4"/>
+          </svg>
         </div>
-        <div class="card p-4 shadow-lg">
-          <h4 class="text-center mb-4 fw-bold" style="color:var(--accent);">Sign In</h4>
-          {% if messages %}
-            {% for msg in messages %}
-              <div class="alert alert-danger py-2">{{ msg }}</div>
-            {% endfor %}
-          {% endif %}
-          <form method="POST">
-            {% csrf_token %}
-            <div class="mb-3">
-              <label class="form-label">Username</label>
-              <input type="text" name="username" class="form-control" placeholder="Enter username" required autofocus/>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Password</label>
-              <input type="password" name="password" class="form-control" placeholder="Enter password" required/>
-            </div>
-            <div class="mb-4">
-              <label class="form-label">Login As</label>
-              <select name="login_type" class="form-select">
-                <option value="user">Remote User</option>
-                <option value="server">COVID19 Server (Admin)</option>
-              </select>
-            </div>
-            <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">
-              <i class="fas fa-sign-in-alt me-2"></i>Login
-            </button>
-          </form>
-          <hr/>
-          <p class="text-center mb-0" style="color:var(--text-secondary);">
-            Don't have an account?
-            <a href="{% url 'register' %}" class="fw-bold text-decoration-none" style="color:var(--accent);">Register here</a>
-          </p>
-        </div>
-        <p class="text-center mt-3 small" style="color:var(--text-secondary);">
-          Vaagdevi College of Engineering · Kakatiya University · 2022-23
-        </p>
+        <div class="logo-title">COVID-19 Forecaster</div>
+        <div class="logo-sub">ML-Powered Prediction System</div>
+        <div class="covid-label">COVID-19</div>
       </div>
+      <div class="divider"></div>
+
+      {% if messages %}{% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}error{% else %}success{% endif %}">
+          {% if message.tags == 'error' %}<svg width="14" height="14" fill="none" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" stroke="#dc2626" stroke-width="1.5"/><path d="M8 4.5v3.5m0 2.5h.01" stroke="#dc2626" stroke-width="1.5" stroke-linecap="round"/></svg>
+          {% else %}<svg width="14" height="14" fill="none" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" stroke="#2563eb" stroke-width="1.5"/><path d="M5 8l2 2 4-4" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>{% endif %}
+          {{ message }}
+        </div>
+      {% endfor %}{% endif %}
+
+      {% if form.non_field_errors %}
+        <div class="alert alert-error">
+          <svg width="14" height="14" fill="none" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" stroke="#dc2626" stroke-width="1.5"/><path d="M8 4.5v3.5m0 2.5h.01" stroke="#dc2626" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Invalid username or password.
+        </div>
+      {% endif %}
+
+      <form method="POST" action="">
+        {% csrf_token %}
+        <div class="form-group">
+          <label for="id_username">Username</label>
+          <input type="text" id="id_username" name="username" placeholder="Enter your username" autocomplete="username" value="{{ form.username.value|default:'' }}" required/>
+        </div>
+        <div class="form-group">
+          <label for="id_password">Password</label>
+          <input type="password" id="id_password" name="password" placeholder="Enter your password" autocomplete="current-password" required/>
+        </div>
+        <div class="form-group">
+          <label for="login_as">Login As</label>
+          <select id="login_as" name="login_as">
+            <option value="server">COVID-19 Server</option>
+            <option value="user">Regular User</option>
+          </select>
+        </div>
+        <div class="remember-row">
+          <input type="checkbox" id="remember_me" name="remember_me"/>
+          <label for="remember_me">Remember me for 30 days</label>
+        </div>
+        <button type="submit" class="btn-login">Access Dashboard</button>
+      </form>
+      <div class="register-row">Don't have an account? <a href="{% url 'register' %}">Create one</a></div>
+      <div class="card-footer"><div class="status-dot"></div>Live data &bull; ML Forecasting &bull; Django 6</div>
     </div>
   </div>
-</div>
-{% endblock %}
+
+  <script>
+  // ══════════════════════════════════════════
+  // SOLAR SYSTEM — exact photo style with orbits, asteroids, shooting stars
+  // ══════════════════════════════════════════
+  (function(){
+    const canvas = document.getElementById('globe-canvas');
+    const W = window.innerWidth, H = window.innerHeight;
+    canvas.width = W; canvas.height = H;
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+    renderer.setSize(W, H);
+    renderer.setClearColor(0x050304, 1);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    const scene = new THREE.Scene();
+
+    // Camera — angled top-down like the photo (looking at orbital plane)
+    const camera = new THREE.PerspectiveCamera(55, W/H, 0.1, 10000);
+    camera.position.set(0, 8, 22);
+    camera.lookAt(4, -1, 0);
+
+    // ══ STARFIELD — subtle, dark like photo ══
+    const addS=(n,sz,op,sp,col)=>{
+      const g=new THREE.BufferGeometry(), p=new Float32Array(n*3);
+      for(let i=0;i<n*3;i++) p[i]=(Math.random()-0.5)*sp;
+      g.setAttribute('position',new THREE.BufferAttribute(p,3));
+      scene.add(new THREE.Points(g,new THREE.PointsMaterial({
+        color:col||0x8899bb,size:sz,transparent:true,opacity:op,sizeAttenuation:false
+      })));
+    };
+    addS(6000,0.6,0.20,3000);       // faint blue-white background
+    addS(2000,1.0,0.35,2000);       // mid stars
+    addS(400, 1.8,0.60,1500);       // bright
+    addS(80,  3.0,0.90,1000);       // very bright
+    addS(15,  5.0,1.00,700);        // sparkle stars
+    addS(800,0.7,0.15,2000,0x6677aa); // bluish tint cluster
+
+    // ══ SUN — large orange glow, center-right like photo ══
+    const SUN_X = 5, SUN_Y = 0, SUN_Z = 0;
+    // Sun core — orange-yellow gradient via layers
+    const sunCore = new THREE.Mesh(
+      new THREE.SphereGeometry(2.8, 64, 64),
+      new THREE.MeshBasicMaterial({ color: 0xffcc22 })
+    );
+    sunCore.position.set(SUN_X, SUN_Y, SUN_Z);
+    scene.add(sunCore);
+
+    // Inner bright white-yellow centre
+    const sunInner = new THREE.Mesh(
+      new THREE.SphereGeometry(1.8, 32, 32),
+      new THREE.MeshBasicMaterial({ color: 0xffeeaa })
+    );
+    sunInner.position.set(SUN_X, SUN_Y, SUN_Z);
+    scene.add(sunInner);
+
+    // Glow halos — orange fading out like photo
+    const sunGlows = [
+      { r: 3.8, col: 0xff8800, op: 0.30 },
+      { r: 5.5, col: 0xff6600, op: 0.15 },
+      { r: 8.0, col: 0xff4400, op: 0.08 },
+      { r: 12,  col: 0xff3300, op: 0.04 },
+      { r: 18,  col: 0xff2200, op: 0.02 },
+    ];
+    sunGlows.forEach(({r,col,op})=>{
+      const m = new THREE.Mesh(new THREE.SphereGeometry(r,32,32),
+        new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:op,side:THREE.BackSide}));
+      m.position.set(SUN_X,SUN_Y,SUN_Z);
+      scene.add(m);
+    });
+
+    // Sun point light — illuminates everything from sun position
+    const sunLight = new THREE.PointLight(0xff9933, 8.0, 200);
+    sunLight.position.set(SUN_X, SUN_Y, SUN_Z);
+    scene.add(sunLight);
+    const sunLight2 = new THREE.PointLight(0xffcc66, 3.0, 300);
+    sunLight2.position.set(SUN_X, SUN_Y, SUN_Z);
+    scene.add(sunLight2);
+
+    // Very dim ambient so dark side isn't pitch black
+    scene.add(new THREE.AmbientLight(0x3355aa, 1.4));
+    // Extra light near Earth position
+    const earthLight=new THREE.PointLight(0x88bbff,8.0,40);
+    earthLight.position.set(SUN_X+8-3, 5, -3);
+    scene.add(earthLight);
+    // Second fill light on Earth
+    const earthLight2=new THREE.PointLight(0x4499ff,5.0,35);
+    earthLight2.position.set(SUN_X+8+3, -3, 3);
+    scene.add(earthLight2);
+
+    // ══ ORBITAL RINGS — ellipses on y=0 plane like photo ══
+    const orbits = [
+      { rx: 4,  rz: 3.5 },  // Mercury
+      { rx: 6,  rz: 5.5 },  // Venus
+      { rx: 8,  rz: 7.5 },  // Earth
+      { rx: 11, rz: 10  },  // Mars
+      { rx: 15, rz: 13  },  // Jupiter
+      { rx: 20, rz: 17  },  // Saturn
+      { rx: 25, rz: 22  },  // Uranus
+      { rx: 30, rz: 27  },  // Neptune
+    ];
+    orbits.forEach(({rx,rz})=>{
+      const pts = [];
+      for(let i=0;i<=128;i++){
+        const a=(i/128)*Math.PI*2;
+        pts.push(new THREE.Vector3(SUN_X+Math.cos(a)*rx, 0, Math.sin(a)*rz));
+      }
+      const og=new THREE.BufferGeometry().setFromPoints(pts);
+      scene.add(new THREE.Line(og,
+        new THREE.LineBasicMaterial({color:0xaa8844,transparent:true,opacity:0.22})));
+    });
+
+    // ══ PLANETS — match photo: dark side lit by sun ══
+    const mkPl=(r,col,emC,emI,shi,orbitR,orbitRz,angle,ring)=>{
+      const g=new THREE.Group();
+      const px=SUN_X+Math.cos(angle)*orbitR;
+      const pz=Math.sin(angle)*orbitRz;
+      g.position.set(px,0,pz);
+      const m=new THREE.Mesh(new THREE.SphereGeometry(r,32,32),
+        new THREE.MeshPhongMaterial({color:col,emissive:emC,emissiveIntensity:emI,shininess:shi}));
+      g.add(m);
+      if(ring){
+        const rm=new THREE.Mesh(new THREE.TorusGeometry(r*1.9,r*0.28,4,64),
+          new THREE.MeshBasicMaterial({color:ring,transparent:true,opacity:0.7,side:THREE.DoubleSide}));
+        rm.rotation.x=Math.PI*0.35; g.add(rm);
+      }
+      scene.add(g);
+      return {group:g,mesh:m,orbitR,orbitRz,angle,speed:0.18/orbitR};
+    };
+    // Position planets like the photo — spread along orbits
+    const mercury= mkPl(0.15,0x888880,0x222220,0.1,8,  4,  3.5, 0.8);
+    const venus  = mkPl(0.22,0xddbb66,0x443310,0.1,12, 6,  5.5, 1.8);
+    const earth  = mkPl(1.2,0x1a6bdd,0x1a55cc,1.8,40, 8,  7.5, 0.0);
+    const mars   = mkPl(0.20,0xaa4422,0x330e06,0.2,14,11,  10,  5.2);
+    const jupiter= mkPl(0.80,0xc8a870,0x3a2808,0.15,20,15, 13,  2.8);
+    const saturn = mkPl(0.60,0xddcc88,0x4a3810,0.15,18,20, 17,  4.5,0xccaa55);
+    const uranus = mkPl(0.35,0x88cccc,0x1a3a3a,0.2, 25,25, 22,  1.2,0x66aaaa);
+    const neptune= mkPl(0.30,0x3355cc,0x0a1055,0.25,30,30, 27,  6.0);
+
+    // Extra planets near Earth zone — right side cluster
+    const moonObj = mkPl(0.30,0xaaaaaa,0x333333,0.3,15, 8, 7.5, 0.35);  // Moon-like
+    const exo1    = mkPl(0.40,0xcc6622,0x3a1a06,0.3,18,10,  9,  0.55);  // Orange planet
+    const exo2    = mkPl(0.25,0x44aacc,0x0a2a3a,0.35,22, 6,  6, 6.10);  // Ice planet left
+
+    // Load real Earth texture
+    const loader=new THREE.TextureLoader();
+    loader.crossOrigin='anonymous';
+    loader.load('https://unpkg.com/three-globe@2.24.5/example/img/earth-blue-marble.jpg',
+      t=>{earth.mesh.material.map=t;earth.mesh.material.color.set(0xffffff);earth.mesh.material.emissiveIntensity=0.3;earth.mesh.material.needsUpdate=true;},
+      undefined,()=>{});
+
+    // ══ ASTEROID BELT — dense, rocky, like photo ══
+    const asteroidMats=[
+      new THREE.MeshPhongMaterial({color:0x6a5840,emissive:0x1a1008,emissiveIntensity:0.1,shininess:2}),
+      new THREE.MeshPhongMaterial({color:0x7a6850,emissive:0x201508,emissiveIntensity:0.1,shininess:2}),
+      new THREE.MeshPhongMaterial({color:0x5a4830,emissive:0x120c08,emissiveIntensity:0.1,shininess:2}),
+      new THREE.MeshPhongMaterial({color:0x8a7060,emissive:0x251810,emissiveIntensity:0.1,shininess:3}),
+    ];
+    const asteroids=[];
+    // Main belt between Mars and Jupiter orbits (like photo)
+    for(let i=0;i<350;i++){
+      const beltR = 12 + Math.random()*5;
+      const beltRz = beltR * 0.88;
+      const angle=Math.random()*Math.PI*2;
+      const px=SUN_X+Math.cos(angle)*beltR+(Math.random()-0.5)*2.5;
+      const pz=Math.sin(angle)*beltRz+(Math.random()-0.5)*2.5;
+      const py=(Math.random()-0.5)*1.2;
+      // Varied rock shapes
+      const sz=0.05+Math.random()*0.28;
+      const geo=new THREE.SphereGeometry(sz,5,4);
+      // Deform to look rocky
+      const pos=geo.attributes.position;
+      for(let v=0;v<pos.count;v++){
+        pos.setXYZ(v,
+          pos.getX(v)*(0.7+Math.random()*0.6),
+          pos.getY(v)*(0.7+Math.random()*0.6),
+          pos.getZ(v)*(0.7+Math.random()*0.6)
+        );
+      }
+      geo.computeVertexNormals();
+      const mat=asteroidMats[Math.floor(Math.random()*4)];
+      const rock=new THREE.Mesh(geo,mat);
+      rock.position.set(px,py,pz);
+      rock.rotation.set(Math.random()*Math.PI,Math.random()*Math.PI,Math.random()*Math.PI);
+      scene.add(rock);
+      asteroids.push({
+        mesh:rock, angle, beltR, beltRz, py,
+        orbitSpeed: 0.003+Math.random()*0.005,
+        rx:(Math.random()-0.5)*0.015,
+        ry:(Math.random()-0.5)*0.020,
+      });
+    }
+
+    // ══ SHOOTING STARS — every 2 seconds, highly visible ══
+    const shooters=[];
+    function spawnStar(){
+      // Start from top-right, fall diagonally like real shooting stars
+      // Random origin across top and right edges
+      const edge = Math.random();
+      let ox, oy, oz;
+      if(edge < 0.5){
+        ox= 15+Math.random()*20;   // from right
+        oy= 5+Math.random()*15;
+        oz= -8+Math.random()*16;
+      } else {
+        ox= -5+Math.random()*30;   // from top
+        oy= 18+Math.random()*8;
+        oz= -8+Math.random()*16;
+      }
+      const speed= 0.55+Math.random()*0.40;
+      const dx=-(0.6+Math.random()*0.4);
+      const dy=-(0.25+Math.random()*0.3);
+      const dz= (Math.random()-0.5)*0.2;
+      const len= 20; // trail segments
+
+      // Trail line
+      const pts=new Float32Array(len*3);
+      for(let k=0;k<len;k++){pts[k*3]=ox;pts[k*3+1]=oy;pts[k*3+2]=oz;}
+      const geo=new THREE.BufferGeometry();
+      geo.setAttribute('position',new THREE.BufferAttribute(pts,3));
+      const line=new THREE.Line(geo,
+        new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:0}));
+      scene.add(line);
+
+      // Bright glowing head
+      const hGeo=new THREE.BufferGeometry();
+      hGeo.setAttribute('position',new THREE.BufferAttribute(new Float32Array([ox,oy,oz]),3));
+      const head=new THREE.Points(hGeo,
+        new THREE.PointsMaterial({color:0xffffff,size:12,transparent:true,opacity:0,sizeAttenuation:false}));
+      scene.add(head);
+
+      shooters.push({line,head,x:ox,y:oy,z:oz,dx,dy,dz,speed,life:0,maxLife:70});
+    }
+
+    // Spawn 6 immediately staggered
+    for(let i=0;i<18;i++) setTimeout(spawnStar, i*200);
+    setInterval(spawnStar, 800);
+
+    // ══ ANIMATE ══
+    let tick=0;
+    const planets=[mercury,venus,earth,mars,jupiter,saturn,uranus,neptune];
+    (function ag(){
+      requestAnimationFrame(ag);
+      tick+=0.004;
+
+      // Planets orbit around sun
+      planets.forEach(p=>{
+        p.angle+=p.speed*0.012;
+        p.group.position.x=SUN_X+Math.cos(p.angle)*p.orbitR;
+        p.group.position.z=Math.sin(p.angle)*p.orbitRz;
+        p.mesh.rotation.y+=0.008;
+      });
+      saturn.mesh.rotation.y+=0.004;
+
+      // Asteroids orbit
+      asteroids.forEach(a=>{
+        a.angle+=a.orbitSpeed;
+        a.mesh.position.x=SUN_X+Math.cos(a.angle)*a.beltR;
+        a.mesh.position.z=Math.sin(a.angle)*a.beltRz;
+        a.mesh.rotation.x+=a.rx;
+        a.mesh.rotation.y+=a.ry;
+      });
+
+      // Sun pulse
+      const pulse=1+Math.sin(tick*1.5)*0.015;
+      sunCore.scale.setScalar(pulse);
+      sunInner.scale.setScalar(pulse*1.05);
+
+      // Shooting stars
+      for(let i=shooters.length-1;i>=0;i--){
+        const s=shooters[i];
+        s.life++;
+        const prog=s.life/s.maxLife;
+        s.x+=s.dx*s.speed*2.5;
+        s.y+=s.dy*s.speed*2.5;
+        s.z+=s.dz*s.speed*2.5;
+
+        // Update trail
+        const pts=[];
+        const tl=20;
+        for(let k=0;k<tl;k++){
+          const t=k/(tl-1);
+          pts.push(s.x-s.dx*t*9, s.y-s.dy*t*9, s.z-s.dz*t*9);
+        }
+        s.line.geometry.setAttribute('position',
+          new THREE.BufferAttribute(new Float32Array(pts),3));
+        s.head.geometry.setAttribute('position',
+          new THREE.BufferAttribute(new Float32Array([s.x,s.y,s.z]),3));
+
+        // Opacity: fade in → bright → fade out
+        const op = prog<0.12 ? prog/0.12 : (prog>0.75 ? (1-(prog-0.75)/0.25) : 1.0);
+        s.line.material.opacity = op*0.95;
+        s.head.material.opacity = op*1.0;
+
+        if(s.life>=s.maxLife){
+          scene.remove(s.line);
+          scene.remove(s.head);
+          shooters.splice(i,1);
+        }
+      }
+
+      renderer.render(scene,camera);
+    })();
+
+    window.addEventListener('resize',()=>{
+      const nW=window.innerWidth,nH=window.innerHeight;
+      canvas.width=nW;canvas.height=nH;
+      renderer.setSize(nW,nH);
+      camera.aspect=nW/nH;
+      camera.updateProjectionMatrix();
+    });
+  })();
+
+  // ══════════════════════════════════════════
+  (function(){
+    const canvas=document.getElementById('particle-canvas');
+    const ctx=canvas.getContext('2d');
+    function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
+    resize(); window.addEventListener('resize',resize);
+
+    let mouse={x:-999,y:-999};
+    window.addEventListener('mousemove',e=>{mouse.x=e.clientX;mouse.y=e.clientY;});
+
+    // Draw COVID symbol EXACTLY like Image 1:
+    // Round red sphere, circular pit bumps, thin stems with round bulb tips
+    function drawVirus(cx,cy,r,alpha){
+      ctx.save(); ctx.globalAlpha=alpha;
+
+      // Outer glow
+      const glow=ctx.createRadialGradient(cx,cy,r*0.4,cx,cy,r*1.4);
+      glow.addColorStop(0,'rgba(220,50,20,0)');
+      glow.addColorStop(0.7,'rgba(220,50,20,0.06)');
+      glow.addColorStop(1,'rgba(220,50,20,0)');
+      ctx.beginPath();ctx.arc(cx,cy,r*1.4,0,Math.PI*2);ctx.fillStyle=glow;ctx.fill();
+
+      // SPIKES behind body — drawn first
+      const ns=16;
+      for(let i=0;i<ns;i++){
+        const a=(i/ns)*Math.PI*2;
+        const s1x=cx+Math.cos(a)*r*0.88, s1y=cy+Math.sin(a)*r*0.88;
+        const s2x=cx+Math.cos(a)*r*1.15, s2y=cy+Math.sin(a)*r*1.15;
+        const tx=cx+Math.cos(a)*r*1.30,   ty=cy+Math.sin(a)*r*1.30;
+        // Thin stem
+        ctx.beginPath();ctx.moveTo(s1x,s1y);ctx.lineTo(s2x,s2y);
+        ctx.strokeStyle='#c42800';ctx.lineWidth=r*0.075;ctx.lineCap='round';ctx.stroke();
+        // Round bulb tip — exactly like Image 1
+        const tg=ctx.createRadialGradient(
+          tx-r*0.05*Math.cos(a), ty-r*0.05*Math.sin(a), 0,
+          tx, ty, r*0.155
+        );
+        tg.addColorStop(0,'#ff9070');
+        tg.addColorStop(0.35,'#e84520');
+        tg.addColorStop(1,'#8a1a00');
+        ctx.beginPath();ctx.arc(tx,ty,r*0.15,0,Math.PI*2);
+        ctx.fillStyle=tg;ctx.fill();
+      }
+
+      // MAIN BODY — big red gradient sphere like Image 1
+      const body=ctx.createRadialGradient(cx-r*0.30,cy-r*0.30,r*0.02,cx+r*0.1,cy+r*0.1,r*1.05);
+      body.addColorStop(0,'#ff7a55');
+      body.addColorStop(0.25,'#ee4a20');
+      body.addColorStop(0.55,'#cc2a00');
+      body.addColorStop(0.80,'#991800');
+      body.addColorStop(1,'#660800');
+      ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
+      ctx.fillStyle=body;ctx.fill();
+
+      // CIRCULAR PIT BUMPS on surface — exactly like Image 1
+      // [offsetX, offsetY, bumpRadius] all as fractions of r
+      const pits=[
+        [0.0,  0.0,  0.26],  // centre large pit
+        [0.35, 0.18, 0.15],  // right upper
+        [-0.33,0.20, 0.14],  // left upper
+        [0.14,-0.36, 0.15],  // lower right
+        [-0.18,-0.30,0.13],  // lower left
+        [0.40,-0.16, 0.12],  // far right
+        [-0.40,-0.12,0.12],  // far left
+        [0.20, 0.40, 0.13],  // upper right
+        [-0.25,0.36, 0.12],  // upper left
+        [0.48, 0.08, 0.10],  // edge right
+        [-0.48,0.06, 0.10],  // edge left
+        [0.04, 0.52, 0.10],  // top
+        [0.04,-0.52, 0.10],  // bottom
+      ];
+      pits.forEach(([ox,oy,br])=>{
+        const px=cx+ox*r, py=cy+oy*r, pr2=br*r;
+        // Clip to sphere edge — skip if too far out
+        if(ox*ox+oy*oy>0.85) return;
+        // Dark shadow rim of pit
+        ctx.beginPath();ctx.arc(px,py,pr2*1.12,0,Math.PI*2);
+        ctx.fillStyle='rgba(80,0,0,0.40)';ctx.fill();
+        // Pit interior — darker concave look
+        const pg=ctx.createRadialGradient(px+pr2*0.2,py+pr2*0.2,0,px,py,pr2);
+        pg.addColorStop(0,'rgba(180,40,10,0.55)');
+        pg.addColorStop(0.6,'rgba(140,20,0,0.45)');
+        pg.addColorStop(1,'rgba(90,0,0,0.20)');
+        ctx.beginPath();ctx.arc(px,py,pr2,0,Math.PI*2);
+        ctx.fillStyle=pg;ctx.fill();
+      });
+
+      // Specular highlight top-left — gives 3D sphere look
+      const hl=ctx.createRadialGradient(cx-r*0.32,cy-r*0.32,0,cx-r*0.32,cy-r*0.32,r*0.48);
+      hl.addColorStop(0,'rgba(255,210,190,0.60)');
+      hl.addColorStop(0.4,'rgba(255,140,100,0.20)');
+      hl.addColorStop(1,'rgba(255,255,255,0)');
+      ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
+      ctx.fillStyle=hl;ctx.fill();
+
+      ctx.restore();
+    }
+
+    let vid=0;
+    function makeVirus(x,y,r,isChild){
+      return{
+        id:vid++,
+        x:x!==undefined?x:Math.random()*canvas.width,
+        y:y!==undefined?y:Math.random()*canvas.height,
+        r:r||(10+Math.random()*12),
+        alpha:isChild?0:(0.55+Math.random()*0.3),
+        alphaTarget:0.55+Math.random()*0.3,
+        vy:-(0.06+Math.random()*0.18),
+        vx:(Math.random()-0.5)*0.16,
+        rot:Math.random()*Math.PI*2,
+        rotV:(Math.random()-0.5)*0.007,
+        pulse:Math.random()*Math.PI*2,
+        wobble:Math.random()*Math.PI*2,
+        wobbleSpeed:0.015+Math.random()*0.02,
+        alive:true,isChild:!!isChild,
+      };
+    }
+
+    let viruses=Array.from({length:35},()=>makeVirus());
+
+    // Sub-particles: fly out, then STOP at a random nearby position and spawn a new virus
+    let subParticles=[]; // {x,y,vx,vy,r,alpha,color,stopped,spawnedVirus,targetX,targetY}
+    let burstFlash=[];   // quick flash ring at blast point
+
+    function spawnBlast(x,y){
+      // Flash ring
+      burstFlash.push({x,y,r:5,maxR:55,alpha:0.8});
+
+      // Sub-particles that fly out, land, then become new viruses
+      const count=8+Math.floor(Math.random()*6);
+      for(let i=0;i<count;i++){
+        const angle=(i/count)*Math.PI*2+(Math.random()-0.5)*0.4;
+        const speed=2+Math.random()*4;
+        const landDist=30+Math.random()*90;
+        const tx=x+Math.cos(angle)*landDist;
+        const ty=y+Math.sin(angle)*landDist;
+        subParticles.push({
+          x,y,
+          vx:Math.cos(angle)*speed,
+          vy:Math.sin(angle)*speed,
+          r:3+Math.random()*5,
+          alpha:1,
+          color:`hsl(${Math.random()*25},85%,${45+Math.random()*25}%)`,
+          stopped:false,
+          spawnedVirus:false,
+          targetX:Math.max(20,Math.min(canvas.width-20,tx)),
+          targetY:Math.max(20,Math.min(canvas.height-20,ty)),
+          life:0, maxLife:30+Math.floor(Math.random()*20),
+          isCovidPiece: Math.random()>0.4,
+          pieceAngle: Math.random()*Math.PI*2,
+        });
+      }
+    }
+
+    function drawSubParticle(p){
+      ctx.save();ctx.globalAlpha=p.alpha;
+      if(p.isCovidPiece){
+        // Draw a tiny broken spike fragment
+        ctx.translate(p.x,p.y);ctx.rotate(p.pieceAngle);
+        ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,-p.r*1.6);
+        ctx.strokeStyle='#cc2a00';ctx.lineWidth=p.r*0.35;ctx.lineCap='round';ctx.stroke();
+        ctx.beginPath();ctx.arc(0,-p.r*1.6,p.r*0.5,0,Math.PI*2);
+        const tg=ctx.createRadialGradient(-p.r*0.1,-p.r*1.7,0,0,-p.r*1.6,p.r*0.5);
+        tg.addColorStop(0,'#ff7755');tg.addColorStop(1,'#992200');
+        ctx.fillStyle=tg;ctx.fill();
+        // Small arc body fragment
+        ctx.beginPath();ctx.arc(0,0,p.r,0.2,1.6);
+        ctx.strokeStyle='#e84020';ctx.lineWidth=p.r*0.4;ctx.stroke();
+      } else {
+        ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        ctx.fillStyle=p.color;ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    function loop(){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+
+      // Blast flash rings
+      burstFlash=burstFlash.filter(f=>f.alpha>0.01);
+      burstFlash.forEach(f=>{
+        ctx.save();ctx.globalAlpha=f.alpha;
+        ctx.beginPath();ctx.arc(f.x,f.y,f.r,0,Math.PI*2);
+        ctx.strokeStyle='#ff4400';ctx.lineWidth=3;ctx.stroke();
+        ctx.restore();
+        f.r+=3;f.alpha-=0.045;
+      });
+
+      // Sub-particles
+      subParticles=subParticles.filter(p=>p.alpha>0.01);
+      subParticles.forEach(p=>{
+        p.life++;
+        if(!p.stopped){
+          p.x+=p.vx;p.y+=p.vy;p.vy+=0.05;
+          p.vx*=0.94;p.vy*=0.94;
+          const dx=p.targetX-p.x,dy=p.targetY-p.y;
+          if(Math.sqrt(dx*dx+dy*dy)<8||p.life>p.maxLife){
+            p.stopped=true;p.x=p.targetX;p.y=p.targetY;
+            // Spawn new virus at this exact landing spot
+            if(!p.spawnedVirus&&Math.random()>0.35){
+              p.spawnedVirus=true;
+              setTimeout(()=>{
+                const child=makeVirus(p.targetX+(Math.random()-0.5)*6,p.targetY+(Math.random()-0.5)*6,5+Math.random()*7,true);
+                child.vx=(Math.random()-0.5)*0.3;
+                child.vy=-0.1-Math.random()*0.1;
+                viruses.push(child);
+                if(viruses.length>60){const idx=viruses.findIndex(v=>v.isChild&&v.alive);if(idx!==-1)viruses.splice(idx,1);}
+              },400+Math.random()*600);
+            }
+          }
+        } else {
+          // Stopped particle slowly fades
+          p.alpha-=0.004;
+          p.r*=0.998;
+        }
+        if(p.isCovidPiece) drawSubParticle(p);
+        else {
+          ctx.save();ctx.globalAlpha=p.alpha;
+          ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+          ctx.fillStyle=p.color;ctx.fill();ctx.restore();
+        }
+      });
+
+      // Viruses
+      viruses.forEach(v=>{
+        if(!v.alive)return;
+        if(v.alpha<v.alphaTarget) v.alpha=Math.min(v.alphaTarget,v.alpha+0.005);
+        v.wobble+=v.wobbleSpeed;
+        v.y+=v.vy+Math.sin(v.wobble)*0.1;
+        v.x+=v.vx+Math.cos(v.wobble*0.7)*0.07;
+        v.rot+=v.rotV;v.pulse+=0.013;
+        if(v.y<-90){v.y=canvas.height+50;v.x=Math.random()*canvas.width;v.isChild=false;}
+        if(v.x<-90)v.x=canvas.width+70;
+        if(v.x>canvas.width+90)v.x=-70;
+        const dist=Math.sqrt((mouse.x-v.x)**2+(mouse.y-v.y)**2);
+        if(dist<v.r*1.05){
+          v.alive=false;spawnBlast(v.x,v.y);
+          setTimeout(()=>{v.x=Math.random()*canvas.width;v.y=canvas.height+60;v.alive=true;v.isChild=false;v.alpha=0.55+Math.random()*0.3;v.alphaTarget=v.alpha;},3500);
+          return;
+        }
+        const pr=v.r*(1+0.03*Math.sin(v.pulse));
+        ctx.save();ctx.translate(v.x,v.y);ctx.rotate(v.rot);ctx.translate(-v.x,-v.y);
+        drawVirus(v.x,v.y,pr,v.alpha);ctx.restore();
+      });
+
+      requestAnimationFrame(loop);
+    }
+    loop();
+  })();
+
+  // ── Subtle Green Trail ──
+  (function(){
+    const canvas=document.createElement('canvas');
+    canvas.style.cssText='position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:9999;';
+    document.body.appendChild(canvas);
+    const ctx=canvas.getContext('2d');
+    function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
+    resize();window.addEventListener('resize',resize);
+    const TRAIL=25,INERTIA=0.35,FADE_DELAY=800,FADE_DUR=1000;
+    let mouse={x:innerWidth/2,y:innerHeight/2},cursor={x:mouse.x,y:mouse.y};
+    let trail=[],lastMove=Date.now(),fadeStart=null,ca=1;
+    window.addEventListener('mousemove',e=>{mouse.x=e.clientX;mouse.y=e.clientY;lastMove=Date.now();fadeStart=null;ca=1;});
+    (function loop(){
+      requestAnimationFrame(loop);
+      cursor.x+=(mouse.x-cursor.x)*(1-INERTIA);cursor.y+=(mouse.y-cursor.y)*(1-INERTIA);
+      trail.unshift({x:cursor.x,y:cursor.y});if(trail.length>TRAIL)trail.pop();
+      const now=Date.now();
+      if(now-lastMove>FADE_DELAY){if(!fadeStart)fadeStart=now;ca=Math.max(0,1-(now-fadeStart)/FADE_DUR);}
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      if(trail.length<2||ca===0)return;
+      for(let i=1;i<trail.length;i++){
+        const t=1-i/trail.length;
+        ctx.beginPath();ctx.moveTo(trail[i-1].x,trail[i-1].y);ctx.lineTo(trail[i].x,trail[i].y);
+        ctx.strokeStyle=`rgba(74,222,128,${t*0.4*ca})`;ctx.lineWidth=t*7;
+        ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke();
+      }
+      if(ca>0){
+        const g=ctx.createRadialGradient(cursor.x,cursor.y,0,cursor.x,cursor.y,7);
+        g.addColorStop(0,`rgba(74,222,128,${0.45*ca})`);g.addColorStop(1,'rgba(74,222,128,0)');
+        ctx.beginPath();ctx.arc(cursor.x,cursor.y,7,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();
+      }
+    })();
+  })();
+  </script>
+</body>
+</html>
