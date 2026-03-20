@@ -8,9 +8,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-change-me-in-production-!!!')
 DEBUG = True
-import dj_database_url
-if os.getenv('DATABASE_URL'):
-    DATABASES = {'default': dj_database_url.config(conn_max_age=600)}
+try:
+    import dj_database_url
+    if os.getenv('DATABASE_URL'):
+        DATABASES = {'default': dj_database_url.config(conn_max_age=600)}
+except ImportError:
+    pass
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '*']
 
 INSTALLED_APPS = [
